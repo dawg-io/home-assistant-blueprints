@@ -1,4 +1,0 @@
-blueprint:
-  name: HVAC Open Door Temperature Hold
-  description: Placeholder blueprint file.
-  domain: automation
