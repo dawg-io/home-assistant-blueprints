@@ -2,6 +2,7 @@
 
 This blueprint protects HVAC behavior when doors/windows are left open.
 It monitors a grouped door/window binary sensor, applies temporary seasonal protection settings after an open delay, and restores your normal daily schedule after everything stays closed for a restore delay.
+<img width="1475" height="968" alt="image" src="https://github.com/user-attachments/assets/25b10670-b360-440b-ad91-f9c81a6501c4" />
 
 ## How seasonal mode works
 
