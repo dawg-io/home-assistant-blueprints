@@ -1,0 +1,4 @@
+blueprint:
+  name: HVAC Daily Thermostat Schedule
+  description: Placeholder blueprint file.
+  domain: automation

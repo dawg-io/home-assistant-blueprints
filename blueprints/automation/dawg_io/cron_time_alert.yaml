@@ -1,0 +1,4 @@
+blueprint:
+  name: Cron Time Alert
+  description: Placeholder blueprint file.
+  domain: automation
