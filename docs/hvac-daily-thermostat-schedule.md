@@ -2,7 +2,7 @@
 
 This blueprint sets thermostat temperature targets at scheduled times during the day.
 It applies different values for morning, afternoon, and evening, based on the current season.
-<img width="1474" height="970" alt="image" src="https://github.com/user-attachments/assets/f8c94cb9-3500-4c21-98fe-5b4cab0dcd5d" />
+<img width="1474" height="970" alt="Screenshot of the HVAC daily seasonal thermostat schedule blueprint" src="https://github.com/user-attachments/assets/f8c94cb9-3500-4c21-98fe-5b4cab0dcd5d" />
 
 ## Schedule overview
 
