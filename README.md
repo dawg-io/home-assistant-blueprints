@@ -1,4 +1,4 @@
-# Home Assistant Blueprints by dawg_io
+# Home Assistant Blueprints by dawg-io
 
 A small collection of beginner-friendly Home Assistant HVAC blueprints focused on temperature scheduling and door/window protection.
 
