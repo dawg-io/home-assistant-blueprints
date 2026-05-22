@@ -1,0 +1,30 @@
+alias: HVAC Daily Thermostat Schedule (Example)
+description: Example automation. Replace entities with your own.
+use_blueprint:
+  path: dawg_io/hvac_daily_thermostat_schedule.yaml
+  input:
+    climate_entities:
+      - climate.downstairs
+    protection_active_helper: input_boolean.hvac_protection_active
+    season_entity: sensor.season
+    morning_time: "06:00:00"
+    afternoon_time: "12:00:00"
+    evening_time: "20:00:00"
+    summer_morning_cool: 74
+    summer_afternoon_cool: 76
+    summer_evening_cool: 73
+    winter_morning_heat: 67
+    winter_afternoon_heat: 65
+    winter_evening_heat: 68
+    spring_morning_low: 63
+    spring_morning_high: 75
+    spring_afternoon_low: 64
+    spring_afternoon_high: 76
+    spring_evening_low: 63
+    spring_evening_high: 74
+    autumn_morning_low: 63
+    autumn_morning_high: 75
+    autumn_afternoon_low: 64
+    autumn_afternoon_high: 76
+    autumn_evening_low: 63
+    autumn_evening_high: 74

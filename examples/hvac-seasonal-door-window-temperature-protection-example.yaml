@@ -1,0 +1,30 @@
+alias: HVAC Seasonal Door/Window Temperature Protection (Example)
+description: Example automation. Replace entities with your own.
+use_blueprint:
+  path: dawg_io/hvac-seasonal-door-window-temperature-protection.yaml
+  input:
+    climate_entities:
+      - climate.downstairs
+    openings_group: binary_sensor.door_window_group
+    protection_active_helper: input_boolean.hvac_protection_active
+    daily_schedule_automation: automation.hvac_daily_thermostat_schedule_example
+    season_entity: sensor.season
+    open_duration:
+      minutes: 5
+    closed_duration:
+      minutes: 5
+    winter_hvac_mode: heat
+    summer_hvac_mode: cool
+    spring_hvac_mode: heat_cool
+    autumn_hvac_mode: heat_cool
+    winter_open_heat: 62
+    summer_open_cool: 80
+    spring_fall_open_low: 62
+    spring_fall_open_high: 80
+    notify_open: true
+    notify_closed: true
+    notify_service: notify.mobile_app_phone
+    open_notification_title: HVAC Protection Enabled
+    open_notification_message: A door or window has been open too long. HVAC protection mode is active.
+    closed_notification_title: HVAC Restored
+    closed_notification_message: All selected doors/windows are closed. Daily thermostat schedule has been restored.

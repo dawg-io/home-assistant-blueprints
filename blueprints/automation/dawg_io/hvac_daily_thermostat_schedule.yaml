@@ -1,0 +1,432 @@
+blueprint:
+  name: HVAC - Daily Seasonal Thermostat Schedule
+  description: >
+    Sets thermostat temperatures by season and time of day.
+    Includes morning, afternoon, and evening schedules for winter, summer,
+    spring, and autumn/fall.
+
+    This blueprint also checks the protection active helper so normal daily
+    schedule changes do not override door/window protection while it is active.
+    The protection blueprint can still force-run this automation when restoring.
+
+  domain: automation
+
+  input:
+    climate_entities:
+      name: Thermostats
+      selector:
+        entity:
+          domain: climate
+          multiple: true
+
+    protection_active_helper:
+      name: Protection Active Helper
+      description: >
+        Input boolean helper used by the door/window protection blueprint.
+        Daily schedule changes only run when this helper is off.
+      selector:
+        entity:
+          domain: input_boolean
+
+    season_entity:
+      name: Season sensor
+      description: Usually sensor.season. Home Assistant uses autumn instead of fall.
+      default: sensor.season
+      selector:
+        entity:
+          domain: sensor
+
+    morning_time:
+      name: Morning time
+      default: "06:00:00"
+      selector:
+        time: {}
+
+    afternoon_time:
+      name: Afternoon time
+      default: "12:00:00"
+      selector:
+        time: {}
+
+    evening_time:
+      name: Evening time
+      default: "20:00:00"
+      selector:
+        time: {}
+
+    summer_morning_cool:
+      name: Summer morning cool temp
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    summer_afternoon_cool:
+      name: Summer afternoon cool temp
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    summer_evening_cool:
+      name: Summer evening cool temp
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_morning_low:
+      name: Spring morning low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_morning_high:
+      name: Spring morning high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_afternoon_low:
+      name: Spring afternoon low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_afternoon_high:
+      name: Spring afternoon high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_evening_low:
+      name: Spring evening low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    spring_evening_high:
+      name: Spring evening high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    winter_morning_heat:
+      name: Winter morning heat temp
+      default: 65
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    winter_afternoon_heat:
+      name: Winter afternoon heat temp
+      default: 65
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    winter_evening_heat:
+      name: Winter evening heat temp
+      default: 65
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_morning_low:
+      name: Autumn/Fall morning low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_morning_high:
+      name: Autumn/Fall morning high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_afternoon_low:
+      name: Autumn/Fall afternoon low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_afternoon_high:
+      name: Autumn/Fall afternoon high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_evening_low:
+      name: Autumn/Fall evening low
+      default: 64
+      selector:
+        number:
+          min: 45
+          max: 80
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+    autumn_evening_high:
+      name: Autumn/Fall evening high
+      default: 75
+      selector:
+        number:
+          min: 60
+          max: 90
+          step: 1
+          unit_of_measurement: "°F"
+          mode: box
+
+mode: restart
+
+variables:
+  season_entity: !input season_entity
+
+  morning_time: !input morning_time
+  afternoon_time: !input afternoon_time
+  evening_time: !input evening_time
+
+  summer_morning_cool: !input summer_morning_cool
+  summer_afternoon_cool: !input summer_afternoon_cool
+  summer_evening_cool: !input summer_evening_cool
+
+  winter_morning_heat: !input winter_morning_heat
+  winter_afternoon_heat: !input winter_afternoon_heat
+  winter_evening_heat: !input winter_evening_heat
+
+  spring_morning_low: !input spring_morning_low
+  spring_morning_high: !input spring_morning_high
+  spring_afternoon_low: !input spring_afternoon_low
+  spring_afternoon_high: !input spring_afternoon_high
+  spring_evening_low: !input spring_evening_low
+  spring_evening_high: !input spring_evening_high
+
+  autumn_morning_low: !input autumn_morning_low
+  autumn_morning_high: !input autumn_morning_high
+  autumn_afternoon_low: !input autumn_afternoon_low
+  autumn_afternoon_high: !input autumn_afternoon_high
+  autumn_evening_low: !input autumn_evening_low
+  autumn_evening_high: !input autumn_evening_high
+
+  current_season: "{{ states(season_entity) }}"
+
+  current_period: >-
+    {% set now_time = now().strftime('%H:%M:%S') %}
+    {% if now_time >= evening_time %}
+      evening
+    {% elif now_time >= afternoon_time %}
+      afternoon
+    {% else %}
+      morning
+    {% endif %}
+
+trigger:
+  - platform: time
+    at: !input morning_time
+    id: morning
+
+  - platform: time
+    at: !input afternoon_time
+    id: afternoon
+
+  - platform: time
+    at: !input evening_time
+    id: evening
+
+  - platform: state
+    entity_id: !input season_entity
+    id: season_changed
+
+  - platform: homeassistant
+    event: start
+    id: homeassistant_start
+
+condition:
+  - condition: state
+    entity_id: !input protection_active_helper
+    state: "off"
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ current_season == 'summer' }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entities
+            data:
+              hvac_mode: cool
+
+          - service: climate.set_temperature
+            target:
+              entity_id: !input climate_entities
+            data:
+              temperature: >-
+                {% if current_period == 'morning' %}
+                  {{ summer_morning_cool }}
+                {% elif current_period == 'afternoon' %}
+                  {{ summer_afternoon_cool }}
+                {% else %}
+                  {{ summer_evening_cool }}
+                {% endif %}
+
+      - conditions:
+          - condition: template
+            value_template: "{{ current_season == 'winter' }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entities
+            data:
+              hvac_mode: heat
+
+          - service: climate.set_temperature
+            target:
+              entity_id: !input climate_entities
+            data:
+              temperature: >-
+                {% if current_period == 'morning' %}
+                  {{ winter_morning_heat }}
+                {% elif current_period == 'afternoon' %}
+                  {{ winter_afternoon_heat }}
+                {% else %}
+                  {{ winter_evening_heat }}
+                {% endif %}
+
+      - conditions:
+          - condition: template
+            value_template: "{{ current_season == 'spring' }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entities
+            data:
+              hvac_mode: heat_cool
+
+          - service: climate.set_temperature
+            target:
+              entity_id: !input climate_entities
+            data:
+              target_temp_low: >-
+                {% if current_period == 'morning' %}
+                  {{ spring_morning_low }}
+                {% elif current_period == 'afternoon' %}
+                  {{ spring_afternoon_low }}
+                {% else %}
+                  {{ spring_evening_low }}
+                {% endif %}
+              target_temp_high: >-
+                {% if current_period == 'morning' %}
+                  {{ spring_morning_high }}
+                {% elif current_period == 'afternoon' %}
+                  {{ spring_afternoon_high }}
+                {% else %}
+                  {{ spring_evening_high }}
+                {% endif %}
+
+      - conditions:
+          - condition: template
+            value_template: "{{ current_season == 'autumn' }}"
+        sequence:
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entities
+            data:
+              hvac_mode: heat_cool
+
+          - service: climate.set_temperature
+            target:
+              entity_id: !input climate_entities
+            data:
+              target_temp_low: >-
+                {% if current_period == 'morning' %}
+                  {{ autumn_morning_low }}
+                {% elif current_period == 'afternoon' %}
+                  {{ autumn_afternoon_low }}
+                {% else %}
+                  {{ autumn_evening_low }}
+                {% endif %}
+              target_temp_high: >-
+                {% if current_period == 'morning' %}
+                  {{ autumn_morning_high }}
+                {% elif current_period == 'afternoon' %}
+                  {{ autumn_afternoon_high }}
+                {% else %}
+                  {{ autumn_evening_high }}
+                {% endif %}
