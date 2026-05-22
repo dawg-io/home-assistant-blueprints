@@ -1,4 +1,482 @@
 blueprint:
-  name: HVAC Daily Thermostat Schedule
-  description: Placeholder blueprint file.
+  name: HVAC - Seasonal Door/Window Temperature Protection
+  description: >
+    Temporarily adjusts thermostats when a grouped door/window binary sensor is left
+    open too long. When all doors/windows are closed again, this automation triggers
+    the selected daily thermostat schedule automation to restore the correct
+    season/time-based thermostat settings.
+
   domain: automation
+
+  input:
+    required_settings:
+      name: "# Required Settings"
+      description: Select the thermostats, door/window group, helpers, and restore automation.
+      icon: mdi:cog
+      collapsed: false
+      input:
+        climate_entities:
+          name: Thermostats
+          selector:
+            entity:
+              domain: climate
+              multiple: true
+
+        openings_group:
+          name: Door / Window Group Helper
+          description: >
+            Binary sensor group helper. Should be ON when any selected door/window is open
+            and OFF when all are closed.
+          selector:
+            entity:
+              domain: binary_sensor
+
+        protection_active_helper:
+          name: Protection Active Helper
+          description: >
+            Input boolean helper used to track whether HVAC protection mode is active.
+          selector:
+            entity:
+              domain: input_boolean
+
+        daily_schedule_automation:
+          name: Daily Thermostat Schedule Automation
+          description: >
+            Select the automation created from HVAC - Daily Seasonal Thermostat Schedule.
+            This will be triggered when protection ends to restore the correct
+            season/time-based thermostat settings.
+          selector:
+            entity:
+              domain: automation
+
+        season_entity:
+          name: Season Sensor
+          description: Usually sensor.season. Home Assistant uses autumn instead of fall.
+          default: sensor.season
+          selector:
+            entity:
+              domain: sensor
+
+    timing_settings:
+      name: "# Timing"
+      description: Configure how long openings must remain open or closed before action is taken.
+      icon: mdi:timer-outline
+      collapsed: true
+      input:
+        open_duration:
+          name: Open Duration Before Protection
+          default:
+            minutes: 5
+          selector:
+            duration: {}
+
+        closed_duration:
+          name: Closed Duration Before Restore
+          default:
+            minutes: 5
+          selector:
+            duration: {}
+
+    seasonal_modes:
+      name: "# Seasonal HVAC Modes"
+      description: Choose what HVAC mode should be used for protection during each season.
+      icon: mdi:sun-snowflake-variant
+      collapsed: true
+      input:
+        winter_hvac_mode:
+          name: Winter Protection HVAC Mode
+          default: heat
+          selector:
+            select:
+              options:
+                - label: Heat
+                  value: heat
+                - label: Heat/Cool
+                  value: heat_cool
+                - label: "Off"
+                  value: "off"
+
+        summer_hvac_mode:
+          name: Summer Protection HVAC Mode
+          default: cool
+          selector:
+            select:
+              options:
+                - label: Cool
+                  value: cool
+                - label: Heat/Cool
+                  value: heat_cool
+                - label: "Off"
+                  value: "off"
+
+        spring_hvac_mode:
+          name: Spring Protection HVAC Mode
+          default: heat_cool
+          selector:
+            select:
+              options:
+                - label: Heat/Cool
+                  value: heat_cool
+                - label: Cool
+                  value: cool
+                - label: Heat
+                  value: heat
+                - label: "Off"
+                  value: "off"
+
+        autumn_hvac_mode:
+          name: Autumn / Fall Protection HVAC Mode
+          default: heat_cool
+          selector:
+            select:
+              options:
+                - label: Heat/Cool
+                  value: heat_cool
+                - label: Cool
+                  value: cool
+                - label: Heat
+                  value: heat
+                - label: "Off"
+                  value: "off"
+
+    protection_temperatures:
+      name: "# Protection Temperatures"
+      description: Set the temporary open-door/window temperatures used while protection is active.
+      icon: mdi:thermometer-alert
+      collapsed: true
+      input:
+        winter_open_heat:
+          name: Winter Open-Door Heat Temp
+          description: Lower heat temp used when a door/window is open too long in winter.
+          default: 62
+          selector:
+            number:
+              min: 45
+              max: 75
+              step: 1
+              unit_of_measurement: "°F"
+              mode: box
+
+        summer_open_cool:
+          name: Summer Open-Door Cool Temp
+          description: Higher cool temp used when a door/window is open too long in summer.
+          default: 80
+          selector:
+            number:
+              min: 65
+              max: 90
+              step: 1
+              unit_of_measurement: "°F"
+              mode: box
+
+        spring_fall_open_low:
+          name: Spring / Fall Heat-Cool Open-Door Low
+          description: >
+            Low temperature used during Spring/Fall Heat/Cool protection mode.
+            Heat can run if the house drops below this temperature.
+          default: 62
+          selector:
+            number:
+              min: 45
+              max: 80
+              step: 1
+              unit_of_measurement: "°F"
+              mode: box
+
+        spring_fall_open_high:
+          name: Spring / Fall Heat-Cool Open-Door High
+          description: >
+            High temperature used during Spring/Fall Heat/Cool protection mode.
+            Cooling can run if the house rises above this temperature.
+            Must be at least 7°F above the Spring/Fall Heat-Cool open-door low temp.
+          default: 80
+          selector:
+            number:
+              min: 60
+              max: 90
+              step: 1
+              unit_of_measurement: "°F"
+              mode: box
+
+    notifications:
+      name: "# Notifications"
+      description: Optional mobile alerts when HVAC protection starts or restores.
+      icon: mdi:bell-outline
+      collapsed: true
+      input:
+        notify_open:
+          name: Send Mobile Alert When Protection Starts
+          default: false
+          selector:
+            boolean: {}
+
+        notify_closed:
+          name: Send Mobile Alert When Restored
+          default: false
+          selector:
+            boolean: {}
+
+        notify_service:
+          name: Mobile Notification Service
+          description: "Example: notify.mobile_app_tjs_iphone"
+          default: notify.mobile_app_your_phone
+          selector:
+            text: {}
+
+        open_notification_title:
+          name: Open Notification Title
+          default: HVAC Protection Enabled
+          selector:
+            text: {}
+
+        open_notification_message:
+          name: Open Notification Message
+          default: A door or window has been open too long. HVAC protection mode is active.
+          selector:
+            text: {}
+
+        closed_notification_title:
+          name: Closed Notification Title
+          default: HVAC Restored
+          selector:
+            text: {}
+
+        closed_notification_message:
+          name: Closed Notification Message
+          default: All selected doors/windows are closed. Daily thermostat schedule has been restored.
+          selector:
+            text: {}
+
+    optional_actions:
+      name: "# Optional Actions"
+      description: Optional extra actions to run when protection starts or when HVAC is restored.
+      icon: mdi:gesture-tap-button
+      collapsed: true
+      input:
+        open_actions:
+          name: Optional Actions When Protection Starts
+          default: []
+          selector:
+            action: {}
+
+        closed_actions:
+          name: Optional Actions When Thermostat Is Restored
+          default: []
+          selector:
+            action: {}
+
+mode: restart
+
+variables:
+  season_entity: !input season_entity
+
+  winter_hvac_mode: !input winter_hvac_mode
+  summer_hvac_mode: !input summer_hvac_mode
+  spring_hvac_mode: !input spring_hvac_mode
+  autumn_hvac_mode: !input autumn_hvac_mode
+
+  winter_open_heat: !input winter_open_heat
+  summer_open_cool: !input summer_open_cool
+  spring_fall_open_low: !input spring_fall_open_low
+  spring_fall_open_high: !input spring_fall_open_high
+
+  notify_open: !input notify_open
+  notify_closed: !input notify_closed
+  notify_service: !input notify_service
+  open_notification_title: !input open_notification_title
+  open_notification_message: !input open_notification_message
+  closed_notification_title: !input closed_notification_title
+  closed_notification_message: !input closed_notification_message
+
+  current_season: "{{ states(season_entity) }}"
+
+  seasonal_hvac_mode: >-
+    {% if current_season == 'winter' %}
+      {{ winter_hvac_mode }}
+    {% elif current_season == 'summer' %}
+      {{ summer_hvac_mode }}
+    {% elif current_season == 'spring' %}
+      {{ spring_hvac_mode }}
+    {% elif current_season == 'autumn' %}
+      {{ autumn_hvac_mode }}
+    {% else %}
+      heat_cool
+    {% endif %}
+
+trigger:
+  - platform: state
+    entity_id: !input openings_group
+    to: "on"
+    for: !input open_duration
+    id: opened_too_long
+
+  - platform: state
+    entity_id: !input openings_group
+    to: "off"
+    for: !input closed_duration
+    id: closed_again
+
+  - platform: homeassistant
+    event: start
+    id: ha_start_check
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: opened_too_long
+
+          - condition: state
+            entity_id: !input protection_active_helper
+            state: "off"
+
+          - condition: state
+            entity_id: !input openings_group
+            state: "on"
+
+        sequence:
+          - if:
+              - condition: template
+                value_template: >
+                  {{ seasonal_hvac_mode == 'heat_cool'
+                     and ((spring_fall_open_high | float) - (spring_fall_open_low | float) < 7) }}
+            then:
+              - service: persistent_notification.create
+                data:
+                  title: HVAC Temperature Range Error
+                  message: >
+                    Spring/Fall open-door temperatures are too close together.
+                    The high temp must be at least 7°F above the low temp.
+              - stop: Invalid Spring/Fall Heat/Cool open-door range.
+
+          - service: input_boolean.turn_on
+            target:
+              entity_id: !input protection_active_helper
+
+          - service: climate.set_hvac_mode
+            target:
+              entity_id: !input climate_entities
+            data:
+              hvac_mode: "{{ seasonal_hvac_mode }}"
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ seasonal_hvac_mode == 'cool' }}"
+                sequence:
+                  - service: climate.set_temperature
+                    target:
+                      entity_id: !input climate_entities
+                    data:
+                      temperature: "{{ summer_open_cool }}"
+
+              - conditions:
+                  - condition: template
+                    value_template: "{{ seasonal_hvac_mode == 'heat' }}"
+                sequence:
+                  - service: climate.set_temperature
+                    target:
+                      entity_id: !input climate_entities
+                    data:
+                      temperature: "{{ winter_open_heat }}"
+
+              - conditions:
+                  - condition: template
+                    value_template: "{{ seasonal_hvac_mode == 'heat_cool' }}"
+                sequence:
+                  - service: climate.set_temperature
+                    target:
+                      entity_id: !input climate_entities
+                    data:
+                      target_temp_low: "{{ spring_fall_open_low }}"
+                      target_temp_high: "{{ spring_fall_open_high }}"
+
+          - if:
+              - condition: template
+                value_template: "{{ notify_open }}"
+            then:
+              - service: "{{ notify_service }}"
+                data:
+                  title: "{{ open_notification_title }}"
+                  message: "{{ open_notification_message }}"
+
+          - choose: []
+            default: !input open_actions
+
+      - conditions:
+          - condition: trigger
+            id: closed_again
+
+          - condition: state
+            entity_id: !input protection_active_helper
+            state: "on"
+
+          - condition: state
+            entity_id: !input openings_group
+            state: "off"
+
+        sequence:
+          - service: automation.trigger
+            target:
+              entity_id: !input daily_schedule_automation
+            data:
+              skip_condition: true
+
+          - service: input_boolean.turn_off
+            target:
+              entity_id: !input protection_active_helper
+
+          - if:
+              - condition: template
+                value_template: "{{ notify_closed }}"
+            then:
+              - service: "{{ notify_service }}"
+                data:
+                  title: "{{ closed_notification_title }}"
+                  message: "{{ closed_notification_message }}"
+
+          - choose: []
+            default: !input closed_actions
+
+      - conditions:
+          - condition: trigger
+            id: ha_start_check
+
+          - condition: state
+            entity_id: !input protection_active_helper
+            state: "on"
+
+          - condition: state
+            entity_id: !input openings_group
+            state: "off"
+
+        sequence:
+          - delay: !input closed_duration
+
+          - condition: state
+            entity_id: !input openings_group
+            state: "off"
+
+          - service: automation.trigger
+            target:
+              entity_id: !input daily_schedule_automation
+            data:
+              skip_condition: true
+
+          - service: input_boolean.turn_off
+            target:
+              entity_id: !input protection_active_helper
+
+          - if:
+              - condition: template
+                value_template: "{{ notify_closed }}"
+            then:
+              - service: "{{ notify_service }}"
+                data:
+                  title: "{{ closed_notification_title }}"
+                  message: "{{ closed_notification_message }}"
+
+          - choose: []
+            default: !input closed_actions
